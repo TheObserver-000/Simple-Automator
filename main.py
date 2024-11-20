@@ -1,4 +1,5 @@
 import pyautogui
+import pydirectinput
 #import pynput
 from pynput.keyboard import Listener as KListener
 from pynput.mouse import Listener as MListener
@@ -131,6 +132,7 @@ def make_sound_thread(option):
 def get_time():
     time_string = strftime("%H:%M:%S")
     time_list = time_string.split(":")
+    print(time_string)
     return time_list
 
 def check_condition(condition_type ,condition):
@@ -212,7 +214,7 @@ def perform_operation(order):
             pyautogui.click(x= order.x, y= order.y, duration= order.duration, clicks=1, button='right') 
         make_sound_thread(1)
     elif order.action == "Press":
-        pyautogui.press(order.key1)
+        pydirectinput.press(order.key1)
         make_sound_thread(3)
     elif order.action == "Hotkey":
         if order.key3 == None:
@@ -716,8 +718,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
         mw_condition_optionmenu.set(order.condition_type)
         mw_condition.insert(0,order.condition)
         if mw_condition_optionmenu.get() == "No Condition":
-            mw_condition.delete(0, ctk.END)
-        mw_condition_placeholder()
+            mw_condition_placeholder()
         mw_add.configure(text="Confirm")
 
     mousewindow.after(200, lambda: mousewindow.iconbitmap(iconpic))
@@ -1126,8 +1127,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
         kw_condition_optionmenu.set(order.condition_type)
         kw_condition.insert(0,order.condition)
         if kw_condition_optionmenu.get() == "No Condition":
-            kw_condition.delete(0, ctk.END)
-        kw_condition_placeholder()
+            kw_condition_placeholder()
         kw_add.configure(text="Confirm")
         
     keyboardwindow.after(200, lambda: keyboardwindow.iconbitmap(iconpic))
@@ -1329,8 +1329,7 @@ def time_window(edit_mode = 0, order = None, index = None):
         tw_condition_optionmenu.set(order.condition_type)
         tw_condition.insert(0, order.condition)
         if tw_condition_optionmenu.get() == "No Condition":
-            tw_condition.delete(0, ctk.END)
-        tw_condition_placeholder()
+            tw_condition_placeholder()
         tw_add.configure(text="Confirm")
     
     timewindow.after(200, lambda: timewindow.iconbitmap(iconpic))
@@ -1399,8 +1398,8 @@ def settings_window():
     sf5 = ctk.CTkFrame(settingswindow, corner_radius= 0, bg_color= "#1e1e21", fg_color= "#1e1e21", border_width = 0, border_color= "#00ff77", width = 5,  height= 50)
     sf5.grid(column = 2, row = 0, rowspan = 3, sticky= "nsew")
 
-    global child_window_ontop
-    if child_window_ontop == 1:
+    global parent_window_ontop
+    if parent_window_ontop == 1:
         settingswindow.attributes("-topmost", True)
     else:
         settingswindow.attributes("-topmost", False)
@@ -1427,10 +1426,6 @@ def settings_window():
 
     infolabel = ctk.CTkLabel(sf3, text= "Hotkey (f1-f12)", bg_color= "#1e1e21", fg_color = "#1e1e21", text_color= "#eec643", font= customfont)
     infolabel.grid(column = 0, row = 3, padx = 5, pady = 5, sticky= "e")
-
-    #checkforkey = threading.Thread(target = check_hotkey)
-    #threadslist.append(checkforkey)
-    #checkforkey.start()
 
     settingswindow.after(200, lambda: settingswindow.iconbitmap(iconpic))
 #--------------------------------------------------------------------------------------------------------------
