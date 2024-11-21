@@ -3,7 +3,6 @@ import pydirectinput
 from pynput.keyboard import Listener as KListener
 from pynput.mouse import Listener as MListener
 import threading
-import time
 from time import strftime, sleep
 from playsound import playsound
 from re import search
@@ -310,7 +309,7 @@ def startloop():
         roundcounter = 1
         numberoforders = int(len(orderlist))
         ordercounter = 1
-        start_time = time.time()
+
         for round in range(repeatcount):
 
             labelround.configure(text = f"{roundcounter}/{numberofrounds}")
@@ -344,7 +343,7 @@ def startloop():
             
             ordercounter = 1
             roundcounter += 1
-        print("--- %s seconds ---" % (time.time() - start_time))
+
         addbutton.configure(state = "normal", border_color= "#ff6600")
         editbutton.configure(state = "normal", border_color= "#ff6600")
         deletebutton.configure(state = "normal", border_color= "#ff6600")
