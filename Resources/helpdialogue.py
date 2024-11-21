@@ -23,7 +23,7 @@ On the left:
 
 -Delete: Deletes the choosen operation from Blue List.
 
--Number of Loop: Number of times the operations will be executed. Must be above 0.
+-Number of Loops: Number of times the operations will be executed. Must be above 0.
 
 -Start/Stop: Self explanatory.
 
@@ -35,15 +35,19 @@ On the buttom:
 
 Mouse Operations:
 
--Move: Moves cursor relative to its current position. Accepts positive and negative values.
+-Move: Moves the cursor relative to its current position. Accepts positive and negative values.
 
 -Move to: Moves the cursor to the given position.
 
--Click, Double Click, Right Click: Does the thing it says in given position. Leaving x and y empty will execute the operation in the current cursor position.
+-Click/Double Click/Right Click/Middle Click: Does the thing it says in given position. Leaving x and y empty will execute the operation in the current cursor position.
 
--x,y: Self explanatory.
+-Drag: Holds the left muse button and moves relative to its current position. Accepts positive and negative values.
+                                  
+-Drag to: Holds the left muse button and moves the cursor to the given position.
 
--Duration: The time it takes for the cursor to move to the given position. 0 is instant.
+-X/Y Cordinate: Self explanatory.
+
+-Move Duration: The time it takes for the cursor to move to the given position. 0 is instant. Supports float numbers.
 
 -Pick Position: Starts getting the position of the cursor. Left/Right click to confirm.
                                   
@@ -54,9 +58,15 @@ Keyboard Operations:
 
 -Press: Presses the given key.
 
+-Hold/Release: Holds/Releases the given key.
+
+WARNING: Don't forget to release the held keys.
+
 -Hotkey: Presses given keys like hotkey.
 
--Write: Writes the given text. (Actually it doesn't write. It's a "copy and paste".)
+-Write (Paste): Copies and pastes the given text (Recommended method).
+
+-Write (Type): Actually types the text. Has more limitations. Only use if Paste method doesn't work.
 
 -1st Key, 2nd Key, 3rd Key, Text: Entries for selected operation.
 
@@ -76,11 +86,11 @@ Conditions:
 
 Add:
 
--Where to Add: Where to add the operation on Blue List. Leaving it empty will add the operation to the end of the list.
+-Operation Index: Where to add the operation on Blue List. Index starts from 1.
 
--Add Operation: Self explanatory.
+-Add Operation: Self explanatory. Will add the operation at given index. Leaving Operation Index empty will add the operation to the end of the list.
 
--Confirm: Apears in edit mode.""") == True:
+-Confirm: Apears in edit mode, instead of Add Operation.""") == True:
                         messagebox.showinfo(title="Help", icon= "question",message="""6/6
 
 Settings:
@@ -89,7 +99,11 @@ Settings:
 
 -Main window always on top: Main window stays above all programs.
 
--Secondary window always on top: Secondary window (settings and operation menus) stays above all programs.
+-Secondary window always on top: Secondary windows (operation menus) stay above all programs.
 
--Hotkey: The key that can start and stop executing operations.
+-Hotkey: The key that starts and stops executing operations. User must choose between f1 to f12. This option can't be disabled (Because Why).
+
+-Delay: Time between each operation. 0.1 or 0.5 seconds is recommended. 0 is instant.
+
+WARNING: No delay means the program will execute around 70-80 operations per second. This will probably cause issues! Do at your own risk.
 """)

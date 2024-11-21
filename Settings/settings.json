@@ -1,7 +1,8 @@
 {
     "trigger_key": "f8",
     "trigger_key_pynput": "Key.f8",
-    "sound_setting": "1",
-    "parent_window_ontop": "1",
-    "child_window_ontop": "1"
+    "sound_setting": 1,
+    "parent_window_ontop": 1,
+    "child_window_ontop": 1,
+    "operation_delay": 0.04
 }

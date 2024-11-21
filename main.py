@@ -1,17 +1,13 @@
 import pyautogui
 import pydirectinput
-#import pynput
 from pynput.keyboard import Listener as KListener
 from pynput.mouse import Listener as MListener
 import threading
-#import time
+import time
 from time import strftime, sleep
 from playsound import playsound
-#import re
 from re import search
-#import os
 from os import path
-#import pyperclip
 from pyperclip import copy
 import json
 from PIL import Image
@@ -97,9 +93,9 @@ def edit_operation():
         order = orderlist[i]
         if   order.action == "Delay":
             time_window(order = order, edit_mode = 1, index = i)
-        elif order.action == "Move" or order.action == "Move to" or order.action == "Click" or order.action == "Double Click" or order.action == "Right Click":
+        elif order.action == "Move" or order.action == "Move to" or order.action == "Click" or order.action == "Double Click" or order.action == "Right Click" or order.action == "Middle Cick" or order.action == "Drag"  or order.action == "Drag to":
             mouse_window(order = order, edit_mode = 1, index = i)
-        elif order.action == "Press" or order.action == "Hotkey" or order.action == "Write":
+        elif order.action == "Press" or order.action == "Hold" or order.action == "Release" or order.action == "Hotkey" or order.action == "Write (Paste)" or order.action == "Write (Type)":
             keyboard_window(order = order, edit_mode = 1, index = i)
     except:
         edit_blink_color()
@@ -132,7 +128,6 @@ def make_sound_thread(option):
 def get_time():
     time_string = strftime("%H:%M:%S")
     time_list = time_string.split(":")
-    print(time_string)
     return time_list
 
 def check_condition(condition_type ,condition):
@@ -191,41 +186,79 @@ def perform_operation(order):
 
         if (int(pyautogui.position().x) <= 0) or (int(pyautogui.position().x) >= int(pyautogui.size().width) - 1) or (int(pyautogui.position().y) <= 0) or (int(pyautogui.position().y) == int(pyautogui.size().height) -1):
             return
-        pyautogui.moveRel(xOffset= xmove, yOffset= ymove, duration= order.duration)
+        pydirectinput.moveRel(xOffset= xmove, yOffset= ymove, duration= order.duration)
 
     elif order.action == "Move to":
-        pyautogui.moveTo(x= order.x, y= order.y, duration= order.duration)
+        pydirectinput.moveTo(x= order.x, y= order.y, duration= order.duration)
     elif order.action == "Click":
         if order.x == None and order.y == None:
-            pyautogui.click(clicks=1, button='left')
+            pydirectinput.click(clicks=1, button='left')
         else:
-            pyautogui.click(x= order.x, y= order.y, duration= order.duration, clicks=1, button='left')
+            pydirectinput.click(x= order.x, y= order.y, duration= order.duration, clicks=1, button='left')
         make_sound_thread(1)
     elif order.action == "Double Click":
         if order.x == None and order.y == None:
-            pyautogui.click(clicks=2, interval=0.15, button='left') 
+            pydirectinput.click(clicks=2, interval=0.15, button='left') 
         else:
-            pyautogui.click(x= order.x, y= order.y, duration= order.duration, clicks=2, interval=0.15, button='left') 
+            pydirectinput.click(x= order.x, y= order.y, duration= order.duration, clicks=2, interval=0.15, button='left') 
         make_sound_thread(2)  
     elif order.action == "Right Click":
         if order.x == None and order.y == None:
-            pyautogui.click(clicks=1, button='right') 
+            pydirectinput.click(clicks=1, button='right') 
         else:
-            pyautogui.click(x= order.x, y= order.y, duration= order.duration, clicks=1, button='right') 
+            pydirectinput.click(x= order.x, y= order.y, duration= order.duration, clicks=1, button='right') 
         make_sound_thread(1)
+    elif order.action == "Middle Cick":
+        if order.x == None and order.y == None:
+            pydirectinput.click(clicks=1, button='middle') 
+        else:
+            pydirectinput.click(x= order.x, y= order.y, duration= order.duration, clicks=1, button='middle') 
+        make_sound_thread(1)
+    elif order.action == "Drag":
+        xmove = order.x
+        ymove = order.y
+        
+        if xmove < 0:
+            if (xmove*-1) >= int(pyautogui.position().x):
+                xmove = -int(pyautogui.position().x) + 1
+        elif (xmove + int(pyautogui.position().x)) >= int(pyautogui.size().width) - 1:
+            xmove = int(pyautogui.size().width) - int(pyautogui.position().x) - 2
+     
+        if ymove < 0:
+            if (ymove*-1) >= int(pyautogui.position().y):
+                ymove = -int(pyautogui.position().y) + 1
+        elif (ymove + int(pyautogui.position().y)) >= int(pyautogui.size().height) - 1:
+            ymove = int(pyautogui.size().height) - int(pyautogui.position().y) - 2
+
+        if (int(pyautogui.position().x) <= 0) or (int(pyautogui.position().x) >= int(pyautogui.size().width) - 1) or (int(pyautogui.position().y) <= 0) or (int(pyautogui.position().y) == int(pyautogui.size().height) -1):
+            return
+        make_sound_thread(1)
+        pydirectinput.dragRel(xOffset= xmove, yOffset= ymove, duration= order.duration)
+    elif order.action == "Drag to":
+        make_sound_thread(1)
+        pydirectinput.dragTo(x= order.x, y= order.y, duration= order.duration)
     elif order.action == "Press":
         pydirectinput.press(order.key1)
         make_sound_thread(3)
+    elif order.action == "Hold":
+        pydirectinput.keyDown(order.key1)
+        make_sound_thread(3)
+    elif order.action == "Release":
+        pydirectinput.keyUp(order.key1)
+        make_sound_thread(3)
     elif order.action == "Hotkey":
         if order.key3 == None:
-            pyautogui.hotkey(order.key1, order.key2)
+            pydirectinput.hotkey(order.key1, order.key2)
         else:
-            pyautogui.hotkey(order.key1, order.key2, order.key3)
+            pydirectinput.hotkey(order.key1, order.key2, order.key3)
         make_sound_thread(3)
-    elif order.action == "Write":
+    elif order.action == "Write (Paste)":
         copy(order.write)
-        pyautogui.hotkey('ctrl', 'v')
         make_sound_thread(4)
+        pydirectinput.hotkey('ctrl', 'v')
+    elif order.action == "Write (Type)":
+        make_sound_thread(4)
+        pydirectinput.typewrite(order.write, interval = 0.01)
     
 def startloop_set():
     global run
@@ -277,7 +310,7 @@ def startloop():
         roundcounter = 1
         numberoforders = int(len(orderlist))
         ordercounter = 1
-
+        start_time = time.time()
         for round in range(repeatcount):
 
             labelround.configure(text = f"{roundcounter}/{numberofrounds}")
@@ -285,6 +318,8 @@ def startloop():
             if run == 0:
                 break
 
+            releaselist = []
+            
             for order in orderlist:
 
                 labelorder.configure(text = f"{ordercounter}/{numberoforders}")
@@ -298,11 +333,18 @@ def startloop():
                 else:
                     perform_operation(order) 
                 
+                if order.action == "Hold":
+                    releaselist.append(order.key1)
+                
                 ordercounter += 1
+                sleep(operation_delay)
 
+            for key in releaselist:
+                pydirectinput.keyUp(key)
+            
             ordercounter = 1
             roundcounter += 1
-
+        print("--- %s seconds ---" % (time.time() - start_time))
         addbutton.configure(state = "normal", border_color= "#ff6600")
         editbutton.configure(state = "normal", border_color= "#ff6600")
         deletebutton.configure(state = "normal", border_color= "#ff6600")
@@ -361,8 +403,11 @@ def start_stop_hotkey():
 def mouse_window(edit_mode = 0, order = None, index = None):
 #--------------------------------------------------------------------------------------------------------------
     def mw_position_blink_color():
-        mw_pick_position.configure(border_color= "#00dd00")
-        mw_pick_position.after(200, lambda: mw_pick_position.configure(border_color= "#5a64a0"))
+        try:
+            mw_pick_position.configure(border_color= "#00dd00")
+            mw_pick_position.after(200, lambda: mw_pick_position.configure(border_color= "#5a64a0"))
+        except:
+            pass
 
     def mw_blink_color():
         mw_add.configure(border_color= "#00dd00")
@@ -392,12 +437,12 @@ def mouse_window(edit_mode = 0, order = None, index = None):
             
         else:
 
-            if mw_action_optionmenu.get() == "Move":
+            if mw_action_optionmenu.get() == "Move" or mw_action_optionmenu.get() == "Drag":
                 try:
                     int(mw_x.get())
                 except:
                     mw_x.delete(0, ctk.END)
-                    mw_x.configure(placeholder_text = "x position")
+                    mw_x.configure(placeholder_text = "X Coordinate")
                     mw_x.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -407,7 +452,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
                     int(mw_y.get())
                 except:
                     mw_y.delete(0, ctk.END)
-                    mw_y.configure(placeholder_text = "y position")
+                    mw_y.configure(placeholder_text = "Y Coordinate")
                     mw_y.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -416,7 +461,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
             else:
                 if mw_x.get().isdigit() == False:
                     mw_x.delete(0, ctk.END)
-                    mw_x.configure(placeholder_text = "x position")
+                    mw_x.configure(placeholder_text = "X Coordinate")
                     mw_x.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -424,7 +469,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
 
                 if int(mw_x.get()) >= int(pyautogui.size().width):
                     mw_x.delete(0, ctk.END)
-                    mw_x.configure(placeholder_text = "x position")
+                    mw_x.configure(placeholder_text = "X Coordinate")
                     mw_x.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -432,7 +477,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
 
                 if mw_y.get().isdigit() == False:
                     mw_y.delete(0, ctk.END)
-                    mw_y.configure(placeholder_text = "y position")
+                    mw_y.configure(placeholder_text = "Y Coordinate")
                     mw_y.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -440,7 +485,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
 
                 if int(mw_y.get()) >= int(pyautogui.size().height):
                     mw_y.delete(0, ctk.END)
-                    mw_y.configure(placeholder_text = "y position")
+                    mw_y.configure(placeholder_text = "Y Coordinate")
                     mw_y.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -466,13 +511,13 @@ def mouse_window(edit_mode = 0, order = None, index = None):
             if mw_addindex.get() != "":
                 if mw_addindex.get().isdigit() == False:
                     mw_addindex.delete(0, ctk.END)
-                    mw_addindex.configure(placeholder_text = "Where to Add")
+                    mw_addindex.configure(placeholder_text = "Operation Index")
                     mw_addindex.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
                 if int(mw_addindex.get()) == 0 or int(mw_addindex.get()) > (int(len(orderlist)) + 1):
                     mw_addindex.delete(0, ctk.END)
-                    mw_addindex.configure(placeholder_text = "Where to Add")
+                    mw_addindex.configure(placeholder_text = "Operation Index")
                     mw_addindex.configure(border_color= "#ee0000")
                     mousewindow.focus_set()
                     return
@@ -519,7 +564,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
             if order.x == None and order.y == None:
                 listbox.insert("END", f"{order.action}, {order.condition_type} {order.condition}")
             else:
-                listbox.insert("END", f"{order.action}, {order.x}x{order.y}, D={order.duration}, {order.condition_type} {order.condition}")
+                listbox.insert("END", f"{order.action}, ({order.x},{order.y}), {order.duration}s, {order.condition_type} {order.condition}")
 
             for i in info:
                 listbox.insert("END", i)
@@ -540,7 +585,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
                 if mw_x.get() == "" and mw_y.get() == "":
                     listbox.insert("END", f"{order.action}, {order.condition_type} {order.condition}")
                 else:
-                    listbox.insert("END", f"{order.action}, {order.x}x{order.y}, D={order.duration}, {order.condition_type} {order.condition}")
+                    listbox.insert("END", f"{order.action}, ({order.x},{order.y}), {order.duration}s, {order.condition_type} {order.condition}")
             
             else:
                 index = int(mw_addindex.get()) - 1
@@ -556,15 +601,15 @@ def mouse_window(edit_mode = 0, order = None, index = None):
                 if order.x == None and order.y == None:
                     listbox.insert("END", f"{order.action}, {order.condition_type} {order.condition}")
                 else:
-                    listbox.insert("END", f"{order.action}, {order.x}x{order.y}, D={order.duration}, {order.condition_type} {order.condition}")
+                    listbox.insert("END", f"{order.action}, ({order.x}{order.y}), {order.duration}s, {order.condition_type} {order.condition}")
 
                 for i in info:
                     listbox.insert("END", i)
             
         mw_x.delete(0, ctk.END)
-        mw_x.configure(placeholder_text = "x position")
+        mw_x.configure(placeholder_text = "X Coordinate")
         mw_y.delete(0, ctk.END)
-        mw_y.configure(placeholder_text = "y position")
+        mw_y.configure(placeholder_text = "Y Coordinate")
         if order.x == None and order.y == None:
             mw_duration.delete(0, ctk.END)
             mw_duration.insert(0, 0.0)
@@ -573,7 +618,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
         mw_condition_placeholder()
         if edit_mode == 0:
             mw_addindex.delete(0, ctk.END)
-            mw_addindex.configure(placeholder_text = "Where to Add")
+            mw_addindex.configure(placeholder_text = "Operation Index")
         mousewindow.focus_set()
 
         if edit_mode == 1:
@@ -620,6 +665,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
                     if child_window_ontop == 0:
                         mousewindow.attributes("-topmost", True)
 
+                    global clicklistener
                     mouselistener = MListener(on_move=pos)
                     clicklistener = MListener(on_click=click)
 
@@ -672,18 +718,18 @@ def mouse_window(edit_mode = 0, order = None, index = None):
     get_position_thread.start()
     threadslist.append(get_position_thread)
 
-    mw_actions = ["Move", "Move to", "Click", "Double Click", "Right Click"]
+    mw_actions = ["Move", "Move to", "Click", "Double Click", "Right Click", "Middle Cick", "Drag", "Drag to"]
     mw_action_optionmenu = ctk.CTkOptionMenu(mf3, values= mw_actions, corner_radius= 30, anchor="center", bg_color= "#1e1e21", fg_color = "#ff6600", button_color= "#ff6600", button_hover_color= "#b34700", text_color= "#1e1e21", dropdown_fg_color= "#1e1e21", dropdown_hover_color="#323235", dropdown_text_color="#ff6600", font= customfont, dropdown_font= customfont)
     mw_action_optionmenu.set("Move")
     mw_action_optionmenu.grid(column = 0, row = 0, padx = 5, pady = 5)
 
-    mw_x = ctk.CTkEntry(mf3, placeholder_text="x position",placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+    mw_x = ctk.CTkEntry(mf3, placeholder_text="X Coordinate",placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
     mw_x.grid(column = 1, row = 0, padx = 5, pady = 5)
     
-    mw_y = ctk.CTkEntry(mf3, placeholder_text="y position", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+    mw_y = ctk.CTkEntry(mf3, placeholder_text="Y Coordinate", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
     mw_y.grid(column = 2, row = 0, padx = 5, pady = 5)
 
-    mw_duration = ctk.CTkEntry(mf3, placeholder_text="Move duration", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+    mw_duration = ctk.CTkEntry(mf3, placeholder_text="Move Duration", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
     mw_duration.grid(column = 3, row = 0, padx = 5, pady = 5)
     mw_duration.insert(0, 0.0)
 
@@ -698,7 +744,7 @@ def mouse_window(edit_mode = 0, order = None, index = None):
         mw_condition_placeholder()
 
     if edit_mode == 0:
-        mw_addindex = ctk.CTkEntry(mf3, placeholder_text="Where to Add", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+        mw_addindex = ctk.CTkEntry(mf3, placeholder_text="Operation Index", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
         mw_addindex.grid(column = 2, row = 1, padx = 5, pady = 5)
 
     mw_add = ctk.CTkButton(mf3, command= lambda: mw_set_operation(edit_mode = edit_mode, order = order, index = index), text="Add Operation", corner_radius= 30, anchor="center", bg_color= "#1e1e21", fg_color = "#463735", hover_color= "#322321", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", font= customfont)
@@ -741,7 +787,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
         kw_add.after(200, lambda: kw_add.configure(border_color= "#ff6600"))
 
     def kw_action_configuration(*arg):
-        if kw_action_optionmenu.get() == "Press":
+        if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
 
             kw_key1.configure(state = "normal", border_color= "#ff6600")
             kw_key1.after(5, lambda: kw_key1.configure(placeholder_text = "1st Key"))
@@ -772,7 +818,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
             kw_textentry.configure(placeholder_text = "Text")
             kw_textentry.after(5, lambda: kw_textentry.configure(state = "disabled", border_color= "#808080"))
 
-        elif kw_action_optionmenu.get() == "Write":
+        elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
 
             kw_key1.delete(0, ctk.END)
             kw_key1.configure(placeholder_text = "1st Key")
@@ -826,7 +872,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
 #--------------------------------------------------------------------------------------------------------------
     def kw_set_operation(edit_mode = 0, order = None, index = None):
 
-        if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hotkey":
+        if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release" or kw_action_optionmenu.get() == "Hotkey":
             if kw_key1.get().lower() not in keys:
                 kw_key1.delete(0, ctk.END)
                 kw_key1.configure(placeholder_text = "1st Key")
@@ -860,7 +906,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
             keyboardwindow.focus_set()
             kw_key3.configure(border_color= "#ff6600")
         
-        if kw_action_optionmenu.get() == "Write":
+        if kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
             if kw_textentry.get() == "" or kw_textentry.get() == None:
                 kw_textentry.delete(0, ctk.END)
                 kw_textentry.configure(placeholder_text = "Text")
@@ -873,13 +919,13 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
             if kw_addindex.get() != "":
                 if kw_addindex.get().isdigit() == False:
                     kw_addindex.delete(0, ctk.END)
-                    kw_addindex.configure(placeholder_text = "Where to Add")
+                    kw_addindex.configure(placeholder_text = "Operation Index")
                     kw_addindex.configure(border_color= "#ee0000")
                     keyboardwindow.focus_set()
                     return
                 if int(kw_addindex.get()) == 0 or int(kw_addindex.get()) > (int(len(orderlist)) + 1):
                     kw_addindex.delete(0, ctk.END)
-                    kw_addindex.configure(placeholder_text = "Where to Add")
+                    kw_addindex.configure(placeholder_text = "Operation Index")
                     kw_addindex.configure(border_color= "#ee0000")
                     keyboardwindow.focus_set()
                     return
@@ -901,7 +947,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
         kw_condition.configure(border_color= "#eec643")
 
         if edit_mode == 1:
-            if kw_action_optionmenu.get() == "Press":
+            if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
                 order.action= kw_action_optionmenu.get()
                 order.key1 = kw_key1.get()
                 order.key2 = None
@@ -922,7 +968,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
                     order.key3 = kw_key3.get()
                     order.write = None
 
-            elif kw_action_optionmenu.get() == "Write":
+            elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
                 order.action= kw_action_optionmenu.get()
                 order.key1 = None
                 order.key2 = None
@@ -942,7 +988,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
             for i in range (listbox.size()-1, index-1, -1):
                 listbox.delete(i)
 
-            if kw_action_optionmenu.get() == "Press":
+            if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
                 listbox.insert("END", f"{order.action}, {order.key1}, {order.condition_type} {order.condition}")
             
             elif kw_action_optionmenu.get() == "Hotkey":
@@ -952,9 +998,9 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
                 elif hotkey_count == 3:
                     listbox.insert("END", f"{order.action}, {order.key1}+{order.key2}+{order.key3}, {order.condition_type} {order.condition}")
 
-            elif kw_action_optionmenu.get() == "Write":
-                if len(order.write) > 20:
-                    txt = order.write[0:20] + "..."
+            elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
+                if len(order.write) > 15:
+                    txt = order.write[0:14] + "..."
                     listbox.insert("END", f'{order.action}, "{txt}", {order.condition_type} {order.condition}')
                 else:
                     listbox.insert("END", f'{order.action}, "{order.write}", {order.condition_type} {order.condition}')    
@@ -964,29 +1010,29 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
 
         else:
 
-            if kw_action_optionmenu.get() == "Press":
+            if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
                 order = Keyboard(action= kw_action_optionmenu.get(), key1 = kw_key1.get(), key2 = None, key3 = None, write = None, condition_type = kw_condition_optionmenu.get(), condition = kw_condition.get())
             elif kw_action_optionmenu.get() == "Hotkey":
                 if   hotkey_count == 2:
                     order = Keyboard(action= kw_action_optionmenu.get(), key1 = kw_key1.get(), key2 = kw_key2.get(), key3 = None, write = None, condition_type = kw_condition_optionmenu.get(), condition = kw_condition.get())
                 elif hotkey_count == 3:
                     order = Keyboard(action= kw_action_optionmenu.get(), key1 = kw_key1.get(), key2 = kw_key2.get(), key3 = kw_key3.get(), write = None, condition_type = kw_condition_optionmenu.get(), condition = kw_condition.get())
-            elif kw_action_optionmenu.get() == "Write":
+            elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
                 order = Keyboard(action= kw_action_optionmenu.get(), key1 = None, key2 = None, key3 = None, write = kw_textentry.get(), condition_type = kw_condition_optionmenu.get(), condition = kw_condition.get())
             
             if kw_addindex.get() == "" or int(kw_addindex.get()) == int(len(orderlist)) + 1:
                 orderlist.append(order)
 
-                if kw_action_optionmenu.get() == "Press":
+                if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
                     listbox.insert("END", f"{order.action}, {order.key1}, {order.condition_type} {order.condition}")
                 elif kw_action_optionmenu.get() == "Hotkey":
                     if   hotkey_count == 2:
                         listbox.insert("END", f"{order.action}, {order.key1}+{order.key2}, {order.condition_type} {order.condition}")
                     elif hotkey_count == 3:
                         listbox.insert("END", f"{order.action}, {order.key1}+{order.key2}+{order.key3}, {order.condition_type} {order.condition}")
-                elif kw_action_optionmenu.get() == "Write":
-                    if len(order.write) > 20:
-                        txt = order.write[0:20] + "..."
+                elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
+                    if len(order.write) > 15:
+                        txt = order.write[0:14] + "..."
                         listbox.insert("END", f'{order.action}, "{txt}", {order.condition_type} {order.condition}')
                     else:
                         listbox.insert("END", f'{order.action}, "{order.write}", {order.condition_type} {order.condition}')    
@@ -1002,16 +1048,16 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
                 for i in range (listbox.size()-1, index-1, -1):
                     listbox.delete(i)
 
-                if kw_action_optionmenu.get() == "Press":
+                if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
                     listbox.insert("END", f"{order.action}, {order.key1}, {order.condition_type} {order.condition}")
                 elif kw_action_optionmenu.get() == "Hotkey":
                     if   hotkey_count == 2:
                         listbox.insert("END", f"{order.action}, {order.key1}+{order.key2}, {order.condition_type} {order.condition}")
                     elif hotkey_count == 3:
                         listbox.insert("END", f"{order.action}, {order.key1}+{order.key2}+{order.key3}, {order.condition_type} {order.condition}")
-                elif kw_action_optionmenu.get() == "Write":
-                    if len(order.write) > 20:
-                        txt = order.write[0:20] + "..."
+                elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
+                    if len(order.write) > 15:
+                        txt = order.write[0:14] + "..."
                         listbox.insert("END", f'{order.action}, "{txt}", {order.condition_type} {order.condition}')
                     else:
                         listbox.insert("END", f'{order.action}, "{order.write}", {order.condition_type} {order.condition}')    
@@ -1032,7 +1078,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
         kw_condition_placeholder()
         if edit_mode == 0:
             kw_addindex.delete(0, ctk.END)
-            kw_addindex.configure(placeholder_text = "Where to Add")
+            kw_addindex.configure(placeholder_text = "Operation Index")
         keyboardwindow.focus_set()
 
         if edit_mode == 1:
@@ -1071,7 +1117,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
     else:
         keyboardwindow.attributes("-topmost", False)
 
-    kw_actions = ["Press", "Hotkey", "Write"]
+    kw_actions = ["Press", "Hold", "Release", "Hotkey", "Write (Paste)", "Write (Type)"]
     kw_action_optionmenu = ctk.CTkOptionMenu(kf3, values= kw_actions, command= kw_action_configuration, corner_radius= 30, anchor="center", bg_color= "#1e1e21", fg_color = "#ff6600", button_color= "#ff6600", button_hover_color= "#b34700", text_color= "#1e1e21", dropdown_fg_color= "#1e1e21", dropdown_hover_color="#323235", dropdown_text_color="#ff6600", font= customfont, dropdown_font= customfont)
     kw_action_optionmenu.set("Press")
     kw_action_optionmenu.grid(column = 0, row = 0, padx = 5, pady = 5)
@@ -1101,7 +1147,7 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
         kw_condition_placeholder()
 
     if edit_mode == 0:
-        kw_addindex = ctk.CTkEntry(kf3, placeholder_text="Where to Add", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+        kw_addindex = ctk.CTkEntry(kf3, placeholder_text="Operation Index", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
         kw_addindex.grid(column = 2, row = 2, padx = 5, pady = 5)
 
     kw_add = ctk.CTkButton(kf3, command= lambda: kw_set_operation(edit_mode = edit_mode, order = order, index = index), text="Add Operation", corner_radius= 30, anchor="center", bg_color= "#1e1e21", fg_color = "#463735", hover_color= "#322321", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", font= customfont)
@@ -1115,14 +1161,14 @@ def keyboard_window(edit_mode = 0, order = None, index = None):
         keyboardwindow.title("Modify Mouse Operation")
         kw_action_optionmenu.set(order.action)
         kw_action_configuration()
-        if kw_action_optionmenu.get() == "Press":
+        if kw_action_optionmenu.get() == "Press" or kw_action_optionmenu.get() == "Hold" or kw_action_optionmenu.get() == "Release":
             kw_key1.insert(0,order.key1)
         elif kw_action_optionmenu.get() == "Hotkey":
             kw_key1.insert(0,order.key1)
             kw_key2.insert(0,order.key2)
             if order.key3 != None:
                 kw_key3.insert(0,order.key3)
-        elif kw_action_optionmenu.get() == "Write":
+        elif kw_action_optionmenu.get() == "Write (Paste)" or kw_action_optionmenu.get() == "Write (Type)":
             kw_textentry.insert(0,order.write)
         kw_condition_optionmenu.set(order.condition_type)
         kw_condition.insert(0,order.condition)
@@ -1185,13 +1231,13 @@ def time_window(edit_mode = 0, order = None, index = None):
             if tw_addindex.get() != "":
                 if tw_addindex.get().isdigit() == False:
                     tw_addindex.delete(0, ctk.END)
-                    tw_addindex.configure(placeholder_text = "Where to Add")
+                    tw_addindex.configure(placeholder_text = "Operation Index")
                     tw_addindex.configure(border_color= "#ee0000")
                     timewindow.focus_set()
                     return
                 if int(tw_addindex.get()) == 0 or int(tw_addindex.get()) > (int(len(orderlist)) + 1):
                     tw_addindex.delete(0, ctk.END)
-                    tw_addindex.configure(placeholder_text = "Where to Add")
+                    tw_addindex.configure(placeholder_text = "Operation Index")
                     tw_addindex.configure(border_color= "#ee0000")
                     timewindow.focus_set()
                     return
@@ -1316,7 +1362,7 @@ def time_window(edit_mode = 0, order = None, index = None):
         tw_condition_placeholder()
 
     if edit_mode == 0:
-        tw_addindex = ctk.CTkEntry(tf3, placeholder_text="Where to Add", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+        tw_addindex = ctk.CTkEntry(tf3, placeholder_text="Operation Index", placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
         tw_addindex.grid(column = 2, row = 1, padx = 5, pady = 5)
     
     tw_add = ctk.CTkButton(tf3,command= lambda: tw_set_operation(edit_mode = edit_mode, order = order, index = index), text="Add Operation", corner_radius= 30, anchor="center", bg_color= "#1e1e21", fg_color = "#463735", hover_color= "#322321", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", font= customfont)
@@ -1375,11 +1421,23 @@ def settings_window():
             triggerkeyentry.configure(border_color= "#eec643")
         else:
             triggerkeyentry.configure(border_color= "#ee0000")
+    
+    def check_delay(*args):
+        global operation_delay
+
+        try:
+            if float(operation_delayentry.get()) >= 0:
+                operation_delay = float(operation_delayentry.get())
+                operation_delayentry.configure(border_color= "#ff6600")
+            else:
+                raise Exception
+        except:
+            operation_delayentry.configure(border_color= "#ee0000")
 #--------------------------------------------------------------------------------------------------------------
     settingswindow = ctk.CTkToplevel(root)
     settingswindow.title("Settings")
     settingswindow.config(background = "#1e1e21")
-    settingswindow.geometry(f"250x150+{int(pyautogui.size().width / 2) - int(250/2)}+{int(pyautogui.size().height / 2) - int(181/2)}")
+    settingswindow.geometry(f"250x226+{int(pyautogui.size().width / 2) - int(250/2)}+{int(pyautogui.size().height / 2) - int(257/2)}")
     settingswindow.resizable(False, False)
     settingswindow.grab_set()
 
@@ -1424,8 +1482,19 @@ def settings_window():
     triggerkeyentry.bind("<KeyRelease>", check_hotkey)
     triggerkeyentry.insert(0, trigger_key)
 
-    infolabel = ctk.CTkLabel(sf3, text= "Hotkey (f1-f12)", bg_color= "#1e1e21", fg_color = "#1e1e21", text_color= "#eec643", font= customfont)
-    infolabel.grid(column = 0, row = 3, padx = 5, pady = 5, sticky= "e")
+    infolabel1 = ctk.CTkLabel(sf3, text= "Hotkey (f1-f12)", bg_color= "#1e1e21", fg_color = "#1e1e21", text_color= "#eec643", font= customfont)
+    infolabel1.grid(column = 0, row = 3, padx = 5, pady = 5, sticky= "e")
+
+    infolabel2 = ctk.CTkLabel(sf3, text= "Delay between operations:", bg_color= "#1e1e21", fg_color = "#1e1e21", text_color= "#e8e6e5", font= customfont)
+    infolabel2.grid(column = 0, row = 4, padx = 5, pady = 5, sticky= "w")
+
+    operation_delayentry = ctk.CTkEntry(sf3, placeholder_text="Delay",placeholder_text_color= "#808080", corner_radius= 30, bg_color= "#1e1e21", fg_color = "#323235", border_width= 2, border_color= "#ff6600", text_color= "#e8e6e5", justify="center", font= customfont)
+    operation_delayentry.grid(column = 0, row = 5, padx = 5, pady = 5, sticky= "w")
+    operation_delayentry.bind("<KeyRelease>", check_delay)
+    operation_delayentry.insert(0, operation_delay)
+
+    infolabel3 = ctk.CTkLabel(sf3, text= "Seconds             ", bg_color= "#1e1e21", fg_color = "#1e1e21", text_color= "#ff6600", font= customfont)
+    infolabel3.grid(column = 0, row = 5, padx = 5, pady = 5, sticky= "e")
 
     settingswindow.after(200, lambda: settingswindow.iconbitmap(iconpic))
 #--------------------------------------------------------------------------------------------------------------
@@ -1440,9 +1509,17 @@ orderlist=[]
 threadslist = []
 soundthreadslist = []
 startthreadslist = []
-keys = pyautogui.KEYBOARD_KEYS
-for i in range (4):
-    keys.pop(0)
+keys = ["!",'"',"#","$","%","&","'","(",")","*","+",",","-",".","/","0","1","2","3","4","5","6","7","8","9",
+        ":",";","<","=",">","?","@","[","\\","]","^","_","`",
+        "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+        "{","|","}","~","add","alt","altleft","altright","apps","backspace",
+        "browserback","browserfavorites","browserforward","browserhome","browserrefresh","browsersearch","browserstop","capslock","clear",
+        "ctrl","ctrlleft","ctrlright","decimal","del","delete","divide","down","end","enter","esc","escape",
+        "f1","f10","f11","f12","f13","f14","f15","f16","f17","f18","f19","f2","f20","f21","f22","f23","f24","f3","f4","f5","f6","f7","f8","f9",
+        "help","home","insert","launchapp1","launchapp2","launchmail","launchmediaselect","left","multiply","nexttrack",
+        "num0","num1","num2","num3","num4","num5","num6","num7","num8","num9","numlock",
+        "pagedown","pageup","pause","pgdn","pgup","playpause","prevtrack","printscreen","prntscrn","prtsc","prtscr","return","right","scrolllock",
+        "shift","shiftleft","shiftright","sleep","space","stop","subtract","tab","up","volumedown","volumemute","volumeup","win","winleft","winright",]
 
 getpos = 0
 click_detected = False
@@ -1470,12 +1547,16 @@ try:
     child_window_ontop = int(settingsdict["child_window_ontop"])
     if child_window_ontop != 0 and child_window_ontop != 1:
         raise Exception
+    operation_delay = float(settingsdict["operation_delay"])
+    if operation_delay < 0:
+        raise Exception
 except:
     trigger_key = "f8"
     trigger_key_pynput = "Key.f8"
     sound_setting = 1
     parent_window_ontop = 1
     child_window_ontop = 1
+    operation_delay = 0.05
 
 if parent_window_ontop == 1:
     root.attributes("-topmost", True)
@@ -1553,13 +1634,14 @@ threadslist.append(start_stop_listener)
 root.bind("<Destroy>", on_destroy)
 root.mainloop()
 
-pyautogui.press(trigger_key)
+triggerlistener.stop()
 
 settingsdict = {"trigger_key": trigger_key,
     "trigger_key_pynput": trigger_key_pynput,
-    "sound_setting": str(sound_setting),
-    "parent_window_ontop": str(parent_window_ontop),
-    "child_window_ontop": str(child_window_ontop)}
+    "sound_setting": int(sound_setting),
+    "parent_window_ontop": int(parent_window_ontop),
+    "child_window_ontop": int(child_window_ontop),
+    "operation_delay": float(operation_delay)}
 
 with open((path.join(base_dir, "Settings", "settings.json")), "w") as file:
     json.dump(settingsdict, file, indent= 4)
