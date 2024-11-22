@@ -237,7 +237,7 @@ def perform_operation(order):
         make_sound_thread(1)
         pydirectinput.dragTo(x= order.x, y= order.y, duration= order.duration)
     elif order.action == "Press":
-        pydirectinput.press(order.key1)
+        pydirectinput.press(order.key1, duration= 0.02)
         make_sound_thread(3)
     elif order.action == "Hold":
         pydirectinput.keyDown(order.key1)
