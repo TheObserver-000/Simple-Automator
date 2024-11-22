@@ -60,7 +60,7 @@ Keyboard Operations:
 
 -Hold/Release: Holds/Releases the given key.
 
-WARNING: Don't forget to release the held keys.
+WARNING: Don't forget to release the held keys (The program will try to release all held keys at the end of each loop, but do it yourself for safety).
 
 -Hotkey: Presses given keys like hotkey.
 
